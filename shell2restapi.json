@@ -1,0 +1,36 @@
+{
+    "/db_availability": {
+      "interval": 60,
+      "timeout": 5,
+      "command": "su",
+      "arguments" : ["-", "someuser", "-c", "/path/to/the/some/script.sh"]
+    },
+    "/currentOp": {
+      "interval": 60,
+      "timeout": 5,
+      "command": "su",
+      "arguments" : ["-", "mongouser", "-c", "mongo --quiet <<< 'JSON.stringify(db.currentOp())'"]
+    },
+    "/currentOpIndex": {
+      "interval": 60,
+      "timeout": 5,
+      "command": "su",
+      "arguments" : ["-", "mongouser", "-c", "mongo --quiet <<< 'JSON.stringify(db.currentOp({$or:[ { op: \"command\", \"query.createIndexes\": { $exists: true } },{ op: \"none\", ns: /\\.system\\.indexes\\b/ }]}))'"]
+    },
+    "/server_time": {
+      "interval": 60,
+      "timeout": 5,
+      "command": "date"
+    },
+    "/uptime": {
+      "interval": 60,
+      "timeout": 5,
+      "command": "uptime"
+    },
+    "/uname": {
+      "interval": -1,
+      "timeout": 5,
+      "command": "uname",
+      "arguments" : ["-a"]
+    }
+}

@@ -131,7 +131,8 @@ class SafeShellToWebServer(object):
             ep = subprocess.Popen(exec_command, bufsize=0, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
             out, err = pwait(ep, timeout)
         except Exception as e:
-            err = bytes(str(e).encode('utf8'))
+            err_msg = """command: "%s"\narguments: %s\nfailed with:%s"""%(command, arguments, str(e))
+            err = bytes(err_msg.encode('utf8'))
         finally:
             return (out.decode('utf8'), err.decode('utf8'))
 
@@ -142,12 +143,12 @@ class SafeShellToWebServer(object):
         
         # Timeout can be overwritten by setting up overwrite_timeout
         # If command wants more than 60 seconds
-        timeout   = cmd.get('timeout', 5)  if cmd.get('timeout', 5) < 60 else cmd.get('overwrite_timeout', 60) 
+        timeout   = cmd.get('timeout',  5) if cmd.get('timeout', 5) < 60 else cmd.get('overwrite_timeout', 60) 
         interval  = cmd.get('interval', 5)
         command   = cmd.get('command')
         arguments = cmd.get('arguments', [])
         # Make sure all are string
-        arguments = [ str(a) for a in arguments]
+        arguments = [ str(a) for a in arguments ]
 
         def wait(seconds=5):
             steps = 0
@@ -160,20 +161,17 @@ class SafeShellToWebServer(object):
         while self._running:
             (out, err) = self.execute_command(timeout, command, *arguments)
 
-            jout = None
-            jerr = None
-
             try:
-                jout = json.loads(out)
+                out = json.loads(out)
             except:
                 out = out.split('\n')
 
             try:
-                jerr = json.loads(err)
+                err = json.loads(err)
             except:
                 err = err.split('\n')
 
-            cmd['status'] = { 'message' : jout if jout else out, 'error' : jerr if jerr else err}
+            cmd['status'] = { 'message' : out, 'error' : err}
 
             if interval >= 0:
                 wait(interval)
